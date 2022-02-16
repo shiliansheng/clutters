@@ -1,0 +1,4 @@
+rundir = /usr/local/ccgpgov
+runcmd = sh run.sh
+match = ./bin/ccgpgov
+profiles =

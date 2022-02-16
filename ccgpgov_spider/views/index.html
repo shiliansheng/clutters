@@ -1,0 +1,16 @@
+{{ template "header" . }}
+<h1>监测任务时间：{{ $.TaskDate }}</h1>
+<table>
+    <tbody>
+        {{ range .Listdata }}
+        <tr>
+            <td><a href="{{ .URL }}">{{ .Title }}</a></td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>    关键词：{{ .Keyword }}</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>    公告时间：{{ .PubDate }}</td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+{{ template "footer" . }}

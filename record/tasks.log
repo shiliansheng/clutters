@@ -1,0 +1,131 @@
+__________________________________[  00.00 - 00.00  ]__________________________________
+
+***************************************************************************************
+____________________________________[             ]____________________________________
+
+***************************************************************************************
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+#######################################################################################
+***************************************************************************************
+__________________________________[  00.00 - 00.00  ]__________________________________
+
+***************************************************************************************
+__________________________________[  01.17 - 01.21  ]__________________________________
+openim测试支撑【施连生】
+module_install优化配置检查逻辑【施连生】
+***************************************************************************************
+__________________________[ module_install优化配置检查逻辑 ]___________________________
+模块安装的时候，将private配置添加到globe里面。
+globe有的配置不需要重复添加，如果没有，就把配置及默认值添加进去。
+之后再判断globe中的配置，如果有空的，则报错，认为模块安装失败。
+
+必须人工配置的配置项，在private中需要置空
+1. 将private中的配置取出
+2. 与globe中的配置进行对比
+3. 如果globe中不存在配置key，添加到globe中
+4. 如果globe中存在配置key，但是value为空，添加到globe中
+5. 检查更新的globe中的private项，是否存在空，存在，则报错，退出程序
+***************************************************************************************
+__________________________________[  01.04 - 01.07  ]__________________________________
+完成openim测试程序并测试【施连生】
+
+***************************************************************************************
+__________________________________[  12.27 - 12.31  ]__________________________________
+module_install问题处理及优化【施连生】
+完成openim测试程序并测试【施连生】
+
+__________________________________[  openim测试程序 ]__________________________________
+第二版：单机收发
+代码地址：https://go.pfgit.cn/attachments/c317fa20-169b-4e65-b981-3e302447a253
+使用说明：https://go.pfgit.cn/shiliansheng/openim/src/master/%e4%bd%bf%e7%94%a8%e8%af%b4%e6%98%8e.md
+
+***************************************************************************************
+_________________________________[   openIM环境搭建   ]__________________________________
+
+***************************************************************************************
+git clone https://github.com/OpenIMSDK/Open-IM-Server.git --recursive
+git clone https://github.com/OpenIMSDK/Open-IM-SDK-Core.git
+docker-compose up -d
+./docker_check_service.sh 
+./check_all.sh
+__________________________[  module_install问题处理及优化  ]___________________________
+当前出现的问题：
+	使用安装包进行安装
+	解压后，到解压目录下运行里面的module_install.sh，出现将自己的进程杀掉的情况
+探究问题：【以modelprocess】安装程序为例
+1.研究该moudle_install.sh将要杀掉的进程是什么进程
+	命令：echo $(ps aux | grep modelprocess)
+	
+	使用go run main.go install **.tar.gz 进行安装 里面含有module_install.sh
+	root 43418 5.8 12.0 2626348 225780 	? 		Sl 	13:45 0:21 java -Xms58m -Xmx58m -jar -Dspring.config.location=/usr/local/modelprocess/conf/application.yml /usr/local/modelprocess/bin/modelprocess.jar 
+	root 47176 6.5 0.4 	901352 	7672 	pts/0 	Sl+ 13:51 0:00 go run main.go install titan-modelprocess-install-1.tar.gz 
+	root 47214 0.3 0.0 	703916 	824 	pts/0 	Sl+ 13:51 0:00 /tmp/go-build1641831010/b001/exe/main install titan-modelprocess-install-1.tar.gz 
+	root 47221 0.0 0.0 	113284 	1224 	pts/0 	S+ 	13:51 0:00 bash -c cd /tmp/module_install/titan-modelprocess-install;sh module_install.sh install 
+	root 47255 0.0 0.0 	112824 	964 	pts/0 	S+ 	13:51 0:00 grep modelprocess
+	想要杀掉的进程列表：43418 47176 47214 47221
+	失败进程：47214
+	是否杀完：否
+
+	使用module_install install **.tar.gz进行安装
+	root 51628 17.8 12.2 	2626348 228532 	? 		Sl 13:58 0:20 java -Xms58m -Xmx58m -jar -Dspring.config.location=/usr/local/modelprocess/conf/application.yml /usr/local/modelprocess/bin/modelprocess.jar 
+	root 52626 0.0 	0.0 	113284 	1408 	pts/0 	S+ 13:59 0:00 /bin/bash /opt/xdev/bin/module_install install titan-modelprocess-install-1.tar.gz 
+	root 52630 0.5 	0.1 	127472 	3476 	pts/0 	S+ 13:59 0:00 /opt/xdev/bin/install_tool/module_install install titan-modelprocess-install-1.tar.gz 
+	root 52640 0.0 	0.0 	113284 	1228 	pts/0 	S+ 13:59 0:00 sh -c cd /usr/local/etc/module_install/titan-modelprocess-install;sh module_install.sh install 
+	root 52667 0.0 	0.0 	112824 	964 	pts/0 	S+ 13:59 0:00 grep modelprocess
+	进程列表：51628 52626 52630 52640
+	失败进程：52630
+	是否杀完：是
+原因：都是想要将运行的程序杀死，但是python比较厉害，自己挂了还能继续跑脚本
+解决办法：在main函数中接收kill信号，然后忽略，当执行kill当前程序时，并不会kill当前程序，该程序将会继续执行下去
+***************************************************************************************
+__________________________________[  12.20 - 12.25  ]__________________________________
+完成module_install重写及测试【施连生】
+dgraph调研【施连生】
+*************************************************************************************** 
+__________________________________[  dgraph调研  ]_____________________________________
+### docker
+监听端口：
+	gRPC server started.  Listening on port 9080
+	HTTP server started.  Listening on port 8080
+	CONN: Connecting to zero:5080
+	Server Listening on port 20000
+
+*************************************************************************************** 
+________________________[  完成module_install重写及测试  ]_____________________________
+
+module_install.sh的在 http://samba.xw/xianwei/release/bigdata/titan/
+安装模块代码：放在tools/module_install下 https://172.16.0.58:7777/svn/xw/xdev
+
+出现一个问题，就是如果使用go执行脚本命令，脚本中途出错，退出，则go程序也直接退出
+*************************************************************************************** 
+____________________________________[   edumeet   ]____________________________________
+
+github链接：https://github.com/edumeet/edumeet
+***************************************************************************************
+
+
+
+# 2021.12.6 - 12.11
+完成采购网爬虫（需对接weilink）并部署【施连生】
+三维重建研究【施连生】
+
+中国政府采购网关键词命中情况：
+http://172.16.5.11:28100/task/{task_id}
+查询链接
+原始查询链接
+url := 	"http://search.ccgp.gov.cn/bxsearch?searchtype=2&page_index=1&dbselect=bidx&" + 
+			"kw=" + keywords + "&start_time=" +	begintime.Format(timeFormat) + 
+			"&end_time=" + endtime.Format(timeFormat) + "&timeType=2"
+指定查询时间： 将timeType修改为6
+url := 	"http://search.ccgp.gov.cn/bxsearch?searchtype=2&page_index=1&dbselect=bidx&" + 
+			"kw=" + keywords + "&start_time=" +	begintime.Format(timeFormat) + 
+			"&end_time=" + endtime.Format(timeFormat) + "&timeType=6"
+## 12.6
+合并采购网爬虫到脚手架中
+
+# tobe
+# 下划线
+# 说明
+# 都在common中的config中读取
+# 查找后使用on duplicate key update ts = now()
+# 使用iris查看时，使用一个线程阻塞住

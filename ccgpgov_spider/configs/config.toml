@@ -1,0 +1,17 @@
+[common]
+#mysql数据库连接串
+db_conn="XW_INNER_DB_CONN"
+#日志级别DEBUG/INFO/WARN/ERROR
+log_level="INFO"
+# 查询时间范围/天
+time_span=3
+# 监听端口
+monitor_port="XW_CCGPGOV_MONITOR_PORT"
+# 爬虫任务每天开始时间 "秒 分 时 天 月 周"
+task_run_time="0 0 1 * * *"
+
+[atinfo]
+# @账户
+account=["1","2"]
+# @姓名
+nickname=["施连生", "胡亮"]
